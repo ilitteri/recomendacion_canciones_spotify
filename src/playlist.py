@@ -1,10 +1,10 @@
-from typing import Dict, Iterator
+from typing import Iterator
 from song import Song
-
 class Playlist:
-    def __init__(self, id: str, name: str, songs: dict = None) -> None:
+    def __init__(self, id: str, name: str, user: str, songs: dict = None) -> None:
         self.__id = id
         self.__name = name
+        self.__owner = user
         self.__songs = songs or {}
     
     def __iter__(self) -> Iterator:
@@ -24,6 +24,9 @@ class Playlist:
 
     def getSongs(self) -> dict:
         return self.__songs
+
+    def getOwner(self) -> str:
+        return self.__owner
     
     def addSong(self, song: Song) -> None:
         name = song.getName()
