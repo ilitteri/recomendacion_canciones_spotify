@@ -83,5 +83,20 @@ def bfs_in_range(graph: Graph, origin: Vertex, destination: int, visited: set = 
                 vertices.enqueue(w)
     return songs_in_range
 
-def clustering_coefficient(users_graph: Graph, songs_graph: Graph, cancion: str = None) -> None:
-    pass
+def clustering(graph: Graph, v: Vertex) -> float:
+    adjacents = v.getAdjacents()
+    adjacentsCount = len(adjacents)
+    if adjacentsCount < 2:
+        return round(0, 3)
+    
+    edgeCount = 0
+
+    for w in adjacents:
+        for x in adjacents:
+            if w.getLabel() != x.getLabel():
+                if x.isAdjacentOf(w):
+                    edgeCount += 1
+
+    v_out_degree = v.getDegree()
+    
+    return round((2 * edgeCount) / (v_out_degree * (v_out_degree - 1)), 3) 

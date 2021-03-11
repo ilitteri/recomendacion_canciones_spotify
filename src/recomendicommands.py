@@ -64,3 +64,8 @@ def in_range(songs_graph: Graph, n: int, song: str) -> None: # O(C+L)
         return
     songs_in_range = bfs_in_range(songs_graph, songs_graph.getVertex(song), n)
     print(songs_in_range)
+
+def calculate_clustering_coefficient(songs_graph: Graph, cancion: str = None) -> None:
+    if cancion == None:
+        return sum(clustering(songs_graph, v) for v in songs_graph) / songs_graph.getOrder()
+    return clustering(songs_graph)
