@@ -1,16 +1,18 @@
+from typing import Any
+
 class Queue:
     def __init__(self):
-        self.data = []
-        self.count = 0
+        self.__data = []
+        self.__count = 0
         
-    def enqueue(self, dato):
-        self.data.append(dato)
-        self.count += 1
+    def enqueue(self, data: Any):
+        self.__data.append(data)
+        self.__count += 1
 
     def dequeue(self):
-        self.count -= 1
-        dato = self.data.pop(0)
-        return dato
+        self.__count -= 1
+        data = self.__data.pop(0)
+        return data
 
-    def esta_vacia(self):
-        return self.count == 0
+    def is_empty(self):
+        return self.__count == 0
