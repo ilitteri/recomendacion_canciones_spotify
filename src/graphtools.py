@@ -1,3 +1,4 @@
+from typing_extensions import TypeVarTuple
 from graph import Graph, Edge, Vertex
 from queue import Queue
 
@@ -60,6 +61,31 @@ def bfs_cycle(graph: Graph, v: Vertex, n: int, visited: set = set()):
             vertices.enqueue(w)
             visited.add(v_label)
             father[w_label] = v_label
+
+def cycle_n(graph: Graph, origin: Vertex, v: Vertex, n: int, camino: list, visited: set = set()) -> bool:
+    visited.add(v)
+    camino.append(v)
+    if len(camino) == n and v == origin: # Si ya encontre solucion 
+        return True
+    if len(camino) == n and v != origin: # Retrocede
+        visited.remove(v)
+        camino.remove(v)
+        return False
+
+    for w in v.getAdjacents(): 
+        if w not in visited:
+            visited.add(w)
+            camino.append(w)
+            if len(camino) == n and w != origin: # Retrocede
+                visited.remove(w)
+                camino.remove(w)
+                continue
+            elif n_cycle(graph, origin, w, n, camino, visited):
+                return True
+
+    visited.remove(v)
+    camino.remove(v)
+    return False
 
 def bfs_in_range(graph: Graph, origin: Vertex, destination: int, visited: set = set()) -> tuple:
     songs_in_range = 0

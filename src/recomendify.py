@@ -104,7 +104,6 @@ def process_stdin(users_graph: Graph, songs_graph: Graph) -> None:
             origin, destination = parameters.split('>>>>')
             if not parameters_handle_error(command, WALK_PARAMETERS_COUNT, origin, destination): continue
             walk(users_graph, songs_graph, origin, destination)
-
         # elif command == MOST_IMPORTANTS:
         #     if not parameters_handle_error(command, MOST_IMPORTANTS_PARAMETER_COUNT, parameters): continue
         #     central_vertices(songs_graph, parameters)
@@ -115,17 +114,17 @@ def process_stdin(users_graph: Graph, songs_graph: Graph) -> None:
         #     if not parameters_handle_error(command, RECOMENDATION_PARAMETER_COUNT, rec_type, n, songs):
         #         continue
         #     page_rank(graph, rec_type, n, songs)
-
         # elif command == CYCLE:
         #     if not parameters_handle_error(command, CYCLE_PARAMETER_COUNT, ):
         #         continue
         #     cycle()
-
         elif command == RANGE:
             n, song = parameters.split(maxsplit=1)
             if not parameters_handle_error(command, RANGE_PARAMETER_COUNT, n, song):
                 continue
             in_range(songs_graph, int(n), song)
+        # elif command == CLUSTERING:
+        #
 
 def load_data(lines: list) -> tuple:
     songs = {}
@@ -158,14 +157,8 @@ def load_data(lines: list) -> tuple:
 def main():
     parsed_lines = read_input(sys.argv[1])
     songs, playlists, users = load_data(parsed_lines)
-    # users = load_user_song_structure_(parsed_lines)
-    del(parsed_lines)
     songs = load_playlists_song_structure(playlists, songs)
-    del(playlists)
-    del(songs)
     process_stdin(users, songs)
-    del(users)
-    del(songs)
 
 if __name__ == '__main__':
     main()

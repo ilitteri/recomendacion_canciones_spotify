@@ -1,7 +1,8 @@
 from constants import SONG_COLOR, USER_COLOR
 from errors import *
+from ex import n_cycle
 from graph import Graph, Edge, Vertex
-from graphtools import bfs_shortest_path, build_path, bfs_in_range, bfs_cycle
+from graphtools import bfs_shortest_path, build_path, bfs_in_range, cycle_n
 
 def error_handler(element: list, msg: str) -> bool:
     if element == None:
@@ -45,8 +46,15 @@ def song_error_handler(songs_graph: Graph, song: str) -> bool:
         return False
     return True
 
-def get_cycle(graph: Graph, song: str, n: int) -> None:
-    cycle = bfs_cycle(graph, graph.getVertex(song), n)
+def print_cycle(songs_graph: Graph, cycle: list) -> None:
+    out = ""
+    for v in cycle[:-1]:
+        out += f'{v} --> '
+    out += cycle[-1]
+    print(out)
+
+def get_n_cycle(graph: Graph, song: str, n: int) -> None:
+    cycle = cycle_n(graph, graph.getVertex(song), n)
     if not error_handler(cycle, ERROR_CYCLE): 
         return
     print_cycle(cycle)
