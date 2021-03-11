@@ -46,14 +46,14 @@ class Vertex:
         self.__incidentEdges.add(edge)
 
 class Edge:
-    def __init__(self, v1: Vertex, v2: Vertex, w: int = 1):
+    def __init__(self, v1: Vertex, v2: Vertex, w: Any = None):
         self.__endPoints = [v1, v2]
         self.__weight = w
 
     def __iter__(self):
         return iter(self.__endPoints)
 
-    def getEndPoints(self) -> set:
+    def getEndPoints(self) -> list:
         return self.__endPoints
     
     def isLoop(self) -> bool:
@@ -65,7 +65,7 @@ class Edge:
 class Graph:
     def __init__(self, verticesSet: dict = None, edgesSet: set = None):
         self.__verticesSet: dict = verticesSet or {}
-        self.__edgesSet: set = edgesSet or set()
+        self.__edgesSet: set = edgesSet or {}
     
     def __iter__(self) -> Iterator:
         return iter(self.__verticesSet)
@@ -82,14 +82,14 @@ class Graph:
     
     def __str__(self):
         out_str = ""
-        for e in self.__edgesSet:
-            out_str += str(e.getEndPoints())
-            out_str += '\n'
-        # for v in self.__verticesSet.values():
-        #     out_str += v.getLabel()
-        #     for w in v.getAdjacents():
-        #         out_str += " <---> " + w.getLabel()
-        #     out_str += "\n"
+        # for e in self.__edgesSet:
+        #     out_str += str(e.getEndPoints())
+        #     out_str += '\n'
+        for v in self.__verticesSet.values():
+            out_str += v.getLabel()
+            for w in v.getAdjacents():
+                out_str += " <---> " + w.getLabel()
+            out_str += "\n"
         return out_str
 
     def isConnected(self) -> bool:
@@ -125,7 +125,7 @@ class Graph:
         endPoints[1].addIncidentEdge(edge)
         endPoints[1].addAdjacent(endPoints[0])
         endPoints[0].addIncidentEdge(edge)
-        self.__edgesSet.add(edge)
+        self.__edgesSet[endPoints[0].getLabel()+endPoints[1].getLabel()] = edge
     
     def removeVertex(self) -> Vertex:
         pass
@@ -141,8 +141,10 @@ class Graph:
             return self.__verticesSet[label]
         raise NameError(label)
 
-    def getEdge(self) -> Edge:
-        pass
+    def getEdge(self, vertex_a: Vertex, vertex_b: Vertex) -> Edge:
+        a = vertex_a.getLabel()
+        b = vertex_b.getLabel()
+        return self.__edgesSet[a+b] if a+b in self.__edgesSet else self.__edgesSet[b+a]
     
     def getEdges(self) -> set:
         return self.__edgesSet
