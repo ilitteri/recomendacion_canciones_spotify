@@ -5,33 +5,35 @@ def build_path(father: dict, origin: Vertex, destination: Vertex) -> list:
     w = origin.getLabel()
     v = destination.getLabel()
     path = []
+    if w not in father:
+        return None
     while v != w:
         path.append(v)
         v = father[v]
     path.append(w)
     return path[::-1]
 
-def shortest_path(graph: Graph, origin: Vertex, destination: Vertex) -> tuple:
-    visited = set()
+def bfs_shortest_path(graph: Graph, origin: Vertex, destination: Vertex, visited: set = set()) -> list:
     father = {}
-    order = {}
     vertices = Queue()
     vertices.enqueue(origin)
-    visited.add(origin.getLabel())
-    father[origin.getLabel()] = None
-    order[origin.getLabel()] = 0
+    origin_label = origin.getLabel()
+    visited.add(origin_label)
+    father[origin_label] = None
+    
     while not vertices.is_empty():
         v = vertices.dequeue()
-        if v.getLabel() == destination.getLabel(): 
+        v_label = v.getLabel()
+        if v_label == destination.getLabel(): 
             break
         for w in v.getAdjacents():
-            if w.getLabel() not in visited:
-                visited.add(w.getLabel())
-                father[w.getLabel()] = v.getLabel()
-                order[w.getLabel()] = order[v.getLabel()] + 1
+            w_label = w.getLabel()
+            if w_label not in visited:
+                visited.add(w_label)
+                father[w_label] = v_label
                 vertices.enqueue(w)
     
-    return order, father, visited
+    return build_path(father, origin, destination)
 
 def central_vertices(users_graph: Graph, songs_graph: Graph, n: int) -> None:
     pass
@@ -39,19 +41,34 @@ def central_vertices(users_graph: Graph, songs_graph: Graph, n: int) -> None:
 def page_rank(users_graph: Graph, songs_graph: Graph, rec_type: str, n: int, songs: list) -> None:
     pass
 
-def cycle(users_graph: Graph, songs_graph: Graph, n: int, song: str) -> None: # O(C^n)
-    pass
+def bfs_cycle(graph: Graph, v: Vertex, n: int, visited: set = set()):
+  vertices = Queue()
+  vertices.enqueue(v)
+  visited.add(v.getLabel())
+  father = {}  # Para poder reconstruir el ciclo
+  father[v.getLabel()] = None
 
-def bfs(graph: Graph, origin: Vertex, destination: int) -> tuple:
+  while not vertices.is_empty():
+    v = vertices.dequeue()
+    v_label = v.getLabel()
+    for w in v.getAdjacents():
+        w_label = w.getLabel()
+        if w_label in visited:
+            if w_label != father[v_label]:
+                return build_path(father, w, v)
+        else:
+            vertices.enqueue(w)
+            visited.add(v_label)
+            father[w_label] = v_label
+
+def bfs_in_range(graph: Graph, origin: Vertex, destination: int, visited: set = set()) -> tuple:
     songs_in_range = 0
-    visited = set()
-    father = {}
-    order = {}
+    order = {} # Para la distancia
     vertices = Queue()
     vertices.enqueue(origin)
     visited.add(origin.getLabel())
-    father[origin.getLabel()] = None
     order[origin.getLabel()] = 0
+
     while not vertices.is_empty():
         v = vertices.dequeue()
         if order[v.getLabel()] == destination: 
@@ -61,11 +78,9 @@ def bfs(graph: Graph, origin: Vertex, destination: int) -> tuple:
         for w in v.getAdjacents():
             if w.getLabel() not in visited:
                 visited.add(w.getLabel())
-                father[w.getLabel()] = v.getLabel()
                 order[w.getLabel()] = order[v.getLabel()] + 1
                 vertices.enqueue(w)
-    
-    return order, father, visited, songs_in_range
+    return songs_in_range
 
 def clustering_coefficient(users_graph: Graph, songs_graph: Graph, cancion: str = None) -> None:
     pass

@@ -1,17 +1,17 @@
 from constants import SONG_COLOR, USER_COLOR
 from errors import *
 from graph import Graph, Edge, Vertex
-from graphtools import shortest_path, build_path, bfs
+from graphtools import bfs_shortest_path, build_path, bfs_in_range, bfs_cycle
+
+def error_handler(element: list, msg: str) -> bool:
+    if element == None:
+        print(msg)
+        return False
+    return True
 
 def end_points_error_handler(users_graph: Graph, origin: str, destination: str) -> bool:
     if origin not in users_graph or destination not in users_graph:
         print(ERROR_INVALID_SONG)
-        return False
-    return True
-
-def path_error_handler(visited: dict, destination: str) -> bool:
-    if destination not in visited:
-        print(ERROR_PATH_NOT_FOUND)
         return False
     return True
 
@@ -34,10 +34,9 @@ def print_shortest_path(users_graph: Graph, path: list) -> None:
 def walk(users_graph: Graph, origin: str, destination: str) -> None:
     if not end_points_error_handler(users_graph, origin, destination): 
         return
-    _, father, visited = shortest_path(users_graph, origin, destination)
-    if not path_error_handler(visited):
+    path = bfs_shortest_path(users_graph, origin, destination)
+    if not error_handler(path, ERROR_PATH_NOT_FOUND):
         return
-    path = build_path(father, origin.getLabel(), destination.getLabel())
     print_shortest_path(users_graph, path)
 
 def song_error_handler(songs_graph: Graph, song: str) -> bool:
@@ -46,7 +45,14 @@ def song_error_handler(songs_graph: Graph, song: str) -> bool:
         return False
     return True
 
+def get_cycle(graph: Graph, song: str, n: int) -> None:
+    cycle = bfs_cycle(graph, graph.getVertex(song), n)
+    if not error_handler(cycle, ERROR_CYCLE): 
+        return
+    print_cycle(cycle)
+
 def in_range(songs_graph: Graph, n: int, song: str) -> None: # O(C+L)
-    if not song_error_handler(songs_graph, song): return
-    _, _, _, songs_in_range = bfs(songs_graph, songs_graph.getVertex(song), n)
+    if not song_error_handler(songs_graph, song): 
+        return
+    songs_in_range = bfs_in_range(songs_graph, songs_graph.getVertex(song), n)
     print(songs_in_range)
