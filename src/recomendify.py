@@ -7,11 +7,11 @@ from playlist import Playlist
 from song import Song
 from constants import *
 from errors import *
-from recomendicommands import walk
+from recomendicommands import walk, in_range
 
 def path_handle_error(path: str) -> None:
     if not os.path.exists(path):
-        raise Exception("Buscate un archivo de verdad.")
+        raise FileNotFoundError("Buscate un archivo de verdad.")
 
 def read_input(path: str) -> list:
     '''Lee el archivo de entrada y lo parsea.'''
@@ -121,10 +121,11 @@ def process_stdin(users_graph: Graph, songs_graph: Graph) -> None:
         #         continue
         #     cycle()
 
-        # elif command == RANGE:
-        #     if not parameters_handle_error(parameters, RANGE_PARAMETER_COUNT):
-        #         continue
-        #     in_range()
+        elif command == RANGE:
+            n, song = parameters.split(maxsplit=1)
+            if not parameters_handle_error(command, RANGE_PARAMETER_COUNT, n, song):
+                continue
+            in_range(songs_graph, int(n), song)
 
 def load_data(lines: list) -> tuple:
     songs = {}

@@ -1,7 +1,7 @@
 from constants import SONG_COLOR, USER_COLOR
-from errors import ERROR_INVALID_SONG, ERROR_PATH_NOT_FOUND
+from errors import *
 from graph import Graph, Edge, Vertex
-from graphtools import shortest_path, central_vertices, page_rank, cycle, clustering_coefficient, in_range, build_path
+from graphtools import shortest_path, build_path, bfs
 
 def end_points_error_handler(users_graph: Graph, origin: str, destination: str) -> bool:
     if origin not in users_graph or destination not in users_graph:
@@ -39,3 +39,14 @@ def walk(users_graph: Graph, origin: str, destination: str) -> None:
         return
     path = build_path(father, origin.getLabel(), destination.getLabel())
     print_shortest_path(users_graph, path)
+
+def song_error_handler(songs_graph: Graph, song: str) -> bool:
+    if song not in songs_graph:
+        print(ERROR_SONG)
+        return False
+    return True
+
+def in_range(songs_graph: Graph, n: int, song: str) -> None: # O(C+L)
+    if not song_error_handler(songs_graph, song): return
+    _, _, _, songs_in_range = bfs(songs_graph, songs_graph.getVertex(song), n)
+    print(songs_in_range)
