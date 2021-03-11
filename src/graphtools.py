@@ -42,8 +42,30 @@ def page_rank(users_graph: Graph, songs_graph: Graph, rec_type: str, n: int, son
 def cycle(users_graph: Graph, songs_graph: Graph, n: int, song: str) -> None: # O(C^n)
     pass
 
-def in_range(users_graph: Graph, songs_graph: Graph, n: int, song: str) -> None: # O(C+L)
-    pass
+def bfs(graph: Graph, origin: Vertex, destination: int) -> tuple:
+    songs_in_range = 0
+    visited = set()
+    father = {}
+    order = {}
+    vertices = Queue()
+    vertices.enqueue(origin)
+    visited.add(origin.getLabel())
+    father[origin.getLabel()] = None
+    order[origin.getLabel()] = 0
+    while not vertices.is_empty():
+        v = vertices.dequeue()
+        if order[v.getLabel()] == destination: 
+            songs_in_range += 1
+        if order[v.getLabel()] > destination:
+            break
+        for w in v.getAdjacents():
+            if w.getLabel() not in visited:
+                visited.add(w.getLabel())
+                father[w.getLabel()] = v.getLabel()
+                order[w.getLabel()] = order[v.getLabel()] + 1
+                vertices.enqueue(w)
+    
+    return order, father, visited, songs_in_range
 
 def clustering_coefficient(users_graph: Graph, songs_graph: Graph, cancion: str = None) -> None:
     pass
