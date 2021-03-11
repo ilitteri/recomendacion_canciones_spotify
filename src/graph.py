@@ -9,6 +9,9 @@ class Vertex:
         self.__adjacents: set = set()
         self.__incidentEdges: set = set()
     
+    # def __eq__(self, o: object) -> bool:
+    #     return self.__label == o.getLabel()
+
     def __str__(self):
         return f'{self.__label}'
     
@@ -23,9 +26,6 @@ class Vertex:
     
     def getColor(self) -> str:
         return self.__color
-    
-    # def getEccentricity(self) -> float:
-    #     return self.__eccentricity if self.__eccentricity != None else float('inf')
 
     def getAdjacents(self) -> set:
         return self.__adjacents
@@ -41,9 +41,6 @@ class Vertex:
 
     def addAdjacent(self, other) -> None:
         self.__adjacents.add(other)
-    
-    def addIncidentEdge(self, edge) -> None:
-        self.__incidentEdges.add(edge)
 
 class Edge:
     def __init__(self, v1: Vertex, v2: Vertex, w: Any = None):
@@ -92,29 +89,10 @@ class Graph:
             out_str += "\n"
         return out_str
 
-    def isConnected(self) -> bool:
-        if len(self.__verticesSet) == 0:
-            return True
-        visited = set()
-        q = []
-        origin = self.__verticesSet.values()[0]
-        visited.add(origin)
-        q.append(origin)
-        while len(q) != 0:
-            vertex = q.pop(0)
-            for adjacent in vertex.getAdjacents():
-                if not adjacent in visited:
-                    visited.add(adjacent)
-                    q.append(adjacent)
-        return self.__verticesSet == visited
-
     def addVertex(self, vertex: Vertex) -> None:
         label = vertex.getLabel()
         if label not in self.__verticesSet:
             self.__verticesSet[label] = vertex
-            # self.__verticesDegrees[vertex.getLabel()] = vertex.getDegree()
-        # else:
-        #     raise ValueError("Duplicate vertex")
     
     def addEdge(self, edge: Edge) -> None:
         endPoints = edge.getEndPoints()
@@ -122,9 +100,9 @@ class Graph:
             if vertex.getLabel() not in self.__verticesSet:
                 raise ValueError("Vertex not in graph")
         endPoints[0].addAdjacent(endPoints[1])
-        endPoints[1].addIncidentEdge(edge)
+        # endPoints[1].addIncidentEdge(edge)
         endPoints[1].addAdjacent(endPoints[0])
-        endPoints[0].addIncidentEdge(edge)
+        # endPoints[0].addIncidentEdge(edge)
         self.__edgesSet[endPoints[0].getLabel()+endPoints[1].getLabel()] = edge
     
     def removeVertex(self) -> Vertex:
@@ -158,16 +136,3 @@ class Graph:
             if self.__verticesSet[v].getColor() == color:
                 order += 1
         return order
-    
-    def getSize(self) -> int:
-        return len(self.__edgesSet)
-
-    def getDegree(self) -> int:
-        # by theorem
-        return 2 * len(self.__edgesSet)
-    
-    def getMinDegree(self) -> int:
-        return min(self.__verticesDegrees.values())
-    
-    def getMaxDegree(self) -> int:
-        return max(self.__verticesDegrees.values())

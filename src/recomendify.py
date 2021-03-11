@@ -7,7 +7,7 @@ from playlist import Playlist
 from song import Song
 from constants import *
 from errors import *
-from recomendicommands import walk, in_range
+from recomendicommands import get_n_cycle, walk, in_range
 
 def path_handle_error(path: str) -> None:
     if not os.path.exists(path):
@@ -114,10 +114,11 @@ def process_stdin(users_graph: Graph, songs_graph: Graph) -> None:
         #     if not parameters_handle_error(command, RECOMENDATION_PARAMETER_COUNT, rec_type, n, songs):
         #         continue
         #     page_rank(graph, rec_type, n, songs)
-        # elif command == CYCLE:
-        #     if not parameters_handle_error(command, CYCLE_PARAMETER_COUNT, ):
-        #         continue
-        #     cycle()
+        elif command == CYCLE:
+            n, song = parameters.split(maxsplit=1)
+            if not parameters_handle_error(command, CYCLE_PARAMETER_COUNT, n, song):
+                continue
+            get_n_cycle(songs_graph, song, n)
         elif command == RANGE:
             n, song = parameters.split(maxsplit=1)
             if not parameters_handle_error(command, RANGE_PARAMETER_COUNT, n, song):

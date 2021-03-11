@@ -2,6 +2,8 @@ from typing_extensions import TypeVarTuple
 from graph import Graph, Edge, Vertex
 from queue import Queue
 
+MIN_CYCLE_LENGTH = 3
+
 def build_path(father: dict, origin: Vertex, destination: Vertex) -> list:
     w = origin.getLabel()
     v = destination.getLabel()
@@ -42,50 +44,23 @@ def central_vertices(users_graph: Graph, songs_graph: Graph, n: int) -> None:
 def page_rank(users_graph: Graph, songs_graph: Graph, rec_type: str, n: int, songs: list) -> None:
     pass
 
-def bfs_cycle(graph: Graph, v: Vertex, n: int, visited: set = set()):
-  vertices = Queue()
-  vertices.enqueue(v)
-  visited.add(v.getLabel())
-  father = {}  # Para poder reconstruir el ciclo
-  father[v.getLabel()] = None
-
-  while not vertices.is_empty():
-    v = vertices.dequeue()
-    v_label = v.getLabel()
+def n_cycle(graph: Graph, origin: Vertex, v: Vertex, n: int, camino: list, visited: set = set()) -> bool:
+    if n < MIN_CYCLE_LENGTH:
+        return None
+    if len(camino) == 0:
+        camino.append(origin.getLabel())
+    visited.add(v.getLabel())
+    if len(camino) == n:
+        return camino if origin in v.getAdjacents() else None
+    
     for w in v.getAdjacents():
-        w_label = w.getLabel()
-        if w_label in visited:
-            if w_label != father[v_label]:
-                return build_path(father, w, v)
-        else:
-            vertices.enqueue(w)
-            visited.add(v_label)
-            father[w_label] = v_label
-
-def cycle_n(graph: Graph, origin: Vertex, v: Vertex, n: int, camino: list, visited: set = set()) -> bool:
-    visited.add(v)
-    camino.append(v)
-    if len(camino) == n and v == origin: # Si ya encontre solucion 
-        return True
-    if len(camino) == n and v != origin: # Retrocede
-        visited.remove(v)
-        camino.remove(v)
-        return False
-
-    for w in v.getAdjacents(): 
-        if w not in visited:
-            visited.add(w)
-            camino.append(w)
-            if len(camino) == n and w != origin: # Retrocede
-                visited.remove(w)
-                camino.remove(w)
-                continue
-            elif n_cycle(graph, origin, w, n, camino, visited):
-                return True
-
-    visited.remove(v)
-    camino.remove(v)
-    return False
+        if w.getLabel() in visited: continue
+        solucion = n_cycle(graph, origin, w, n, camino + [w.getLabel()], visited)
+        if solucion is not None:
+            return solucion
+    
+    visited.remove(v.getLabel())
+    return None
 
 def bfs_in_range(graph: Graph, origin: Vertex, destination: int, visited: set = set()) -> tuple:
     songs_in_range = 0
