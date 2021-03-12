@@ -1,17 +1,13 @@
 #!/usr/bin/python3
-import os
 import sys
-from graph import Graph, Edge, Vertex
+from grafo import Grafo
 from user import User
 from playlist import Playlist
 from song import Song
 from constants import *
 from errors import *
-from recomendicommands import get_n_cycle, walk, in_range
-
-def path_handle_error(path: str) -> None:
-    if not os.path.exists(path):
-        raise FileNotFoundError("Buscate un archivo de verdad.")
+from error_handling import parameters_error_handler, command_handle_error, input_handle_error, path_handle_error
+from recomendicommands import get_cycle_n, load_most_importants, walk, in_range, print_clustering_coefficient, print_most_importants
 
 def read_input(path: str) -> list:
     '''Lee el archivo de entrada y lo parsea.'''
@@ -26,140 +22,109 @@ def read_input(path: str) -> list:
 
     return parsed_lines
 
-def input_handle_error(line: str) -> bool:
-    '''
-    Verifica que la entrada por consola sea valida.
-    Pre: se ingreso por consola.
-    '''
-    line = line.split(maxsplit=1)
-    if len(line) < 1:
-        print(ERROR_INPUT)
-        return False
-    elif len(line) == 1:
-        if CLUSTERING in line:
-            return True
-        else:
-            print(ERROR_PARAM_COUNT)
-            return False
-    return True
-
-def command_handle_error(command: str) -> bool:
-    '''
-    Verifica que el comando ingresado sea valido.
-    Pre: se verifico el ingreso por consola.
-    '''
-    if command in COMMANDS:
-        print(ERROR_CMD)
-        return False
-    return True
-
-def parameters_handle_error(command: str, n: int = 0, *parameters: tuple) -> bool:
-    '''
-    Verifica que la cantidad de parametros sea valida para cada comando.
-    Pre: se verifico el ingreso por consola.
-    '''
-    if command != CLUSTERING:
-        return len(parameters) == n
-    return not (len(parameters) > n)    
-
-def load_playlists_song_structure(playlists: dict, songs: dict) -> Graph:
-    graph = Graph()
+def load_playlists_song_structure(playlists: dict, songs: dict) -> Grafo:
+    graph = Grafo(es_dirigido=False)
 
     for song in songs:
-        graph.addVertex(Vertex(song, songs[song], SONG_COLOR))
+        graph.agregar_vertice(song)
 
     for playlist in playlists:
-        added = {}
+        added = set()
         for song1 in playlists[playlist]:
-            added[song1] = True
             for song2 in playlists[playlist]:
-                if not (song1 in added and song2 in added):
-                    graph.addEdge(Edge(graph.getVertex(song1), graph.getVertex(song2), (playlists[playlist].getOwner(), playlist)))
-    
+                # if song1 not in added or song2 not in added:
+                if not graph.estan_unidos(song1, song2) and song1 != song2:
+                    graph.agregar_arista(song1, song2, (playlists[playlist].getOwner(), playlist)) 
     return graph
 
-def load_user_song_structure_(lines: list) -> Graph:
+def load_user_song_structure_(lines: list) -> Grafo:
     '''
     Lee las lineas parseadas y carga en memoria los datos.
     Pre: Un archivo fue leido y parseado.
     '''
-    graph = Graph()
+    graph = Grafo(es_dirigido=False)
+
     for line in lines:
-        _, user_id, track_name, artist, playlist_id, playlist_name, genres = line
-        user = Vertex(user_id, color=USER_COLOR)
-        song = Vertex(track_name+" - "+artist, color=SONG_COLOR)
-        graph.addVertex(user)
-        graph.addVertex(song)
-        graph.addEdge(Edge(user, song, ))
+        _, user_id, track_name, artist, _, _, _ = line
+        graph.agregar_vertice(user_id)
+        graph.agregar_vertice(track_name+" - "+artist)
+        graph.agregar_arista(user_id, track_name+" - "+artist)
 
     return graph
 
-def process_stdin(users_graph: Graph, songs_graph: Graph) -> None:
+def process_stdin(users_graph: Grafo, songs_graph: Grafo, songs: dict) -> None:
+    most_importants = []
     while True:
-        stdin = input('')
-        if not input_handle_error(stdin): continue
-        command, parameters = stdin.split(maxsplit=1)
-        if not command_handle_error(command): continue
+        stdin = input('').split(maxsplit=1)
+        if not input_handle_error(stdin): 
+            continue
+        command = stdin[0]
+        if not command_handle_error(command): 
+            continue
         if command == WALK:
-            origin, destination = parameters.split('>>>>')
-            if not parameters_handle_error(command, WALK_PARAMETERS_COUNT, origin, destination): continue
-            walk(users_graph, songs_graph, origin, destination)
-        # elif command == MOST_IMPORTANTS:
-        #     if not parameters_handle_error(command, MOST_IMPORTANTS_PARAMETER_COUNT, parameters): continue
-        #     central_vertices(songs_graph, parameters)
-
+            parameters = stdin[1].split(' >>>> ')
+            if not parameters_error_handler(command, WALK_PARAMETERS_COUNT, parameters): 
+                continue
+            origin, destination = parameters
+            walk(users_graph, origin, destination)
+        elif command == MOST_IMPORTANTS:
+            parameters = stdin[1].split()
+            if not parameters_error_handler(command, MOST_IMPORTANTS_PARAMETER_COUNT, parameters): 
+                continue
+            if len(most_importants) == 0:
+                most_importants = load_most_importants(users_graph, songs)
+            print_most_importants(most_importants, int(parameters[0]))
         # elif command == RECOMENDATION:
-        #     rec_type, n, songs = parameters.split(maxsplit=2)
-        #     songs = songs.split('>>>>')
-        #     if not parameters_handle_error(command, RECOMENDATION_PARAMETER_COUNT, rec_type, n, songs):
+        #     rec_type, n, songs = stdin[1].split(maxsplit=2)
+        #     songs = songs.split(' >>>> ')
+        #     if not parameters_error_handler(command, RECOMENDATION_PARAMETER_COUNT, rec_type, n, songs):
         #         continue
         #     page_rank(graph, rec_type, n, songs)
         elif command == CYCLE:
-            n, song = parameters.split(maxsplit=1)
-            if not parameters_handle_error(command, CYCLE_PARAMETER_COUNT, n, song):
+            parameters = stdin[1].split(maxsplit=1)
+            if not parameters_error_handler(command, CYCLE_PARAMETER_COUNT, parameters):
                 continue
-            get_n_cycle(songs_graph, song, n)
+            n, song = parameters
+            get_cycle_n(songs_graph, song, int(n))
         elif command == RANGE:
-            n, song = parameters.split(maxsplit=1)
-            if not parameters_handle_error(command, RANGE_PARAMETER_COUNT, n, song):
+            parameters = stdin[1].split(maxsplit=1)
+            if not parameters_error_handler(command, RANGE_PARAMETER_COUNT, parameters):
                 continue
+            n, song = parameters
             in_range(songs_graph, int(n), song)
-        # elif command == CLUSTERING:
-        #
+        elif command == CLUSTERING:
+            if not parameters_error_handler(command, CLUSTERING_PARAMETER_COUNT, [] if len(stdin) == 1 else stdin[1]):
+                continue
+            print_clustering_coefficient(songs_graph, None if len(stdin) == 1 else stdin[1])
 
 def load_data(lines: list) -> tuple:
     songs = {}
-    graph = Graph()
+    graph = Grafo(es_dirigido=False)
     playlists = {}
     for line in lines:
         _, user_id, track_name, artist, playlist_id, playlist_name, genres = line
-        # if user_id not in users:
-        #     users[user_id] = User(user_id)
         if playlist_id not in playlists:
             playlists[playlist_id] = Playlist(playlist_id, playlist_name, user_id)
-        # if playlist_id not in users[user_id]:
-        #     users[user_id].addPlaylist(playlists[playlist_id])
         song_tag = track_name+" - "+artist
         if song_tag not in songs:
             song = Song(song_tag, artist, genres.split(','))
             songs[song_tag] = song
-            playlists[playlist_id].addSong(song)
-            # user_playlist = users[user_id].getPlaylists()[playlist_id]
-            # user_playlist.addSong(song)
-
-        user = Vertex(user_id, color=USER_COLOR)
-        song = Vertex(song_tag, color=SONG_COLOR)
-        graph.addVertex(user)
-        graph.addVertex(song)
-        graph.addEdge(Edge(user, song, playlists[playlist_id]))
+        playlists[playlist_id].addSong(songs[song_tag])
+        
+        if user_id not in graph:
+            graph.agregar_vertice(user_id)
+        if song_tag not in graph:
+            graph.agregar_vertice(song_tag)
+        if not graph.estan_unidos(user_id, song_tag):
+            graph.agregar_arista(user_id, song_tag, playlist_name)
 
     return songs, playlists, graph
 
 def main():
     parsed_lines = read_input(sys.argv[1])
     songs, playlists, users = load_data(parsed_lines)
-    songs = load_playlists_song_structure(playlists, songs)
-    process_stdin(users, songs)
+    songs_g = load_playlists_song_structure(playlists, songs)
+    process_stdin(users, songs_g, songs)
 
 if __name__ == '__main__':
     main()

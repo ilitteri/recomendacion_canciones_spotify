@@ -36,3 +36,6 @@ class Playlist:
         name = song.getName()
         if name in self.__songs:
             del(self.__songs[name])
+    
+    def __str__(self) -> str:
+        return self.__name

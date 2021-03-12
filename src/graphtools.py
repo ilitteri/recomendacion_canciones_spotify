@@ -1,12 +1,11 @@
-from typing_extensions import TypeVarTuple
-from graph import Graph, Edge, Vertex
+from grafo import Grafo
 from queue import Queue
 
-MIN_CYCLE_LENGTH = 3
+MIN_CYCLE_LENGTH: int = 3
 
-def build_path(father: dict, origin: Vertex, destination: Vertex) -> list:
-    w = origin.getLabel()
-    v = destination.getLabel()
+def build_path(father: dict, origin: str, destination: str) -> list:
+    w = origin
+    v = destination
     path = []
     if w not in father:
         return None
@@ -16,21 +15,20 @@ def build_path(father: dict, origin: Vertex, destination: Vertex) -> list:
     path.append(w)
     return path[::-1]
 
-def bfs_shortest_path(graph: Graph, origin: Vertex, destination: Vertex, visited: set = set()) -> list:
+def bfs_shortest_path(grafo: Grafo, origin: str, destination: str, visited: set = set()) -> list:
     father = {}
     vertices = Queue()
     vertices.enqueue(origin)
-    origin_label = origin.getLabel()
-    visited.add(origin_label)
-    father[origin_label] = None
+    visited.add(origin)
+    father[origin] = None
     
     while not vertices.is_empty():
         v = vertices.dequeue()
-        v_label = v.getLabel()
-        if v_label == destination.getLabel(): 
+        v_label = v
+        if v_label == destination: 
             break
-        for w in v.getAdjacents():
-            w_label = w.getLabel()
+        for w in grafo.adyacentes(v):
+            w_label = w
             if w_label not in visited:
                 visited.add(w_label)
                 father[w_label] = v_label
@@ -38,65 +36,68 @@ def bfs_shortest_path(graph: Graph, origin: Vertex, destination: Vertex, visited
     
     return build_path(father, origin, destination)
 
-def central_vertices(users_graph: Graph, songs_graph: Graph, n: int) -> None:
+def central_vertices(users_graph: Grafo, songs_graph: Grafo, n: int) -> None:
     pass
 
-def page_rank(users_graph: Graph, songs_graph: Graph, rec_type: str, n: int, songs: list) -> None:
-    pass
-
-def n_cycle(graph: Graph, origin: Vertex, v: Vertex, n: int, camino: list, visited: set = set()) -> bool:
+def cycle_n(grafo: Grafo, origin: str, v: str, n: int, camino: list, visited: set = set()) -> bool:
     if n < MIN_CYCLE_LENGTH:
         return None
     if len(camino) == 0:
-        camino.append(origin.getLabel())
-    visited.add(v.getLabel())
+        camino.append(origin)
+    visited.add(v)
     if len(camino) == n:
-        return camino if origin in v.getAdjacents() else None
+        return camino if origin in grafo.adyacentes(v) else None
     
-    for w in v.getAdjacents():
-        if w.getLabel() in visited: continue
-        solucion = n_cycle(graph, origin, w, n, camino + [w.getLabel()], visited)
+    for w in grafo.adyacentes(v):
+        if w in visited: continue
+        solucion = cycle_n(grafo, origin, w, n, camino + [w], visited)
         if solucion is not None:
             return solucion
     
-    visited.remove(v.getLabel())
+    visited.remove(v)
     return None
 
-def bfs_in_range(graph: Graph, origin: Vertex, destination: int, visited: set = set()) -> tuple:
+def bfs_in_range(grafo: Grafo, origin: str, destination: int) -> tuple:
     songs_in_range = 0
+    visited = set()
     order = {} # Para la distancia
     vertices = Queue()
     vertices.enqueue(origin)
-    visited.add(origin.getLabel())
-    order[origin.getLabel()] = 0
+    visited.add(origin)
+    order[origin] = 0
 
     while not vertices.is_empty():
         v = vertices.dequeue()
-        if order[v.getLabel()] == destination: 
-            songs_in_range += 1
-        if order[v.getLabel()] > destination:
-            break
-        for w in v.getAdjacents():
-            if w.getLabel() not in visited:
-                visited.add(w.getLabel())
-                order[w.getLabel()] = order[v.getLabel()] + 1
+        for w in grafo.adyacentes(v):
+            if w not in visited:
+                visited.add(w)
+                order[w] = order[v] + 1
+                if order[w] == destination: 
+                    songs_in_range += 1
+                if order[w] > destination:
+                    break
                 vertices.enqueue(w)
     return songs_in_range
 
-def clustering(graph: Graph, v: Vertex) -> float:
-    adjacents = v.getAdjacents()
-    adjacentsCount = len(adjacents)
-    if adjacentsCount < 2:
+def clustering(grafo: Grafo, v: str) -> float:
+    adjacents = grafo.adyacentes(v)
+    if len(adjacents) < 2:
         return round(0, 3)
     
     edgeCount = 0
 
     for w in adjacents:
         for x in adjacents:
-            if w.getLabel() != x.getLabel():
-                if x.isAdjacentOf(w):
+            if w != x:
+                if grafo.estan_unidos(x, w) and x != w:
                     edgeCount += 1
 
-    v_out_degree = v.getDegree()
-    
-    return round((2 * edgeCount) / (v_out_degree * (v_out_degree - 1)), 3) 
+    v_out_degree = len(adjacents)
+
+    return round(edgeCount / (v_out_degree * (v_out_degree - 1)), 3) 
+
+def pagerank(graph: Grafo, v: str, most_importants: dict, iterations: int = 20, d: float = 0.85):
+    degree = graph.orden()
+    for _ in range(iterations):
+        for v in graph:
+            most_importants[v] = (1 - d) / degree + d * sum(most_importants[w] / len(graph.adyacentes(w)) for w in graph.adyacentes(v))
