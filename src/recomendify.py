@@ -5,7 +5,7 @@ from user import User
 from playlist import Playlist
 from song import Song
 from constants import *
-from errors import *
+from error_messages import *
 from error_handling import parameters_error_handler, command_handle_error, input_handle_error, path_handle_error, recomendation_parameter_error_handler
 from recomendicommands import get_cycle_n, load_most_importants, recommend, walk, in_range, print_clustering_coefficient, print_song_list
 
