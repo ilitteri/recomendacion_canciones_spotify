@@ -2,6 +2,7 @@ from typing import Iterator
 from playlist import Playlist
 
 class User:
+    '''Estructura que almacena datos de usuario'''
     def __init__(self, name: str, playlists: dict = None) -> None:
         self.__name = name
         self.__playlists = playlists or {}

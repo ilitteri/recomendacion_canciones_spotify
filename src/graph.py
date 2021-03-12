@@ -1,6 +1,7 @@
 from typing import Iterator, Any
 
 class Graph:
+	'''Estructura grafo.'''
 	def __init__(self, is_directed: bool = False, vertices_init: list = []) -> None:
 		self.__vertices = {}
 		for v in vertices_init:

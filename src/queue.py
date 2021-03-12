@@ -1,6 +1,7 @@
 from typing import Any
 
 class Queue:
+    '''Estructura de cola'''
     def __init__(self):
         self.__data = []
         self.__count = 0

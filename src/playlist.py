@@ -1,6 +1,8 @@
 from typing import Iterator
 from song import Song
 class Playlist:
+    '''Estructura que almacena informacion de una playlist incluyendo un 
+    diccionario de caciones.'''
     def __init__(self, id: str, name: str, user: str, songs: dict = None) -> None:
         self.__id = id
         self.__name = name

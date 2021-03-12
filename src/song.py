@@ -1,4 +1,5 @@
 class Song:
+    '''Estructura que almacena datos de una cancion'''
     def __init__(self, name: str, artist: str, genres: list) -> None:
         self.__name = name
         self.__artist = artist
