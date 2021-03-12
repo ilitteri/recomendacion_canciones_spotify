@@ -12,7 +12,7 @@ def most_importants_parameter_error_handler(param_count: int, parameters: tuple)
     if len(parameters) != param_count:
         print(ERROR_PARAM_COUNT)
         return False
-    return parameters[0].isdigit()
+    return parameters[0].isdigit() #imprimir error
 
 def recomendation_parameter_error_handler(param_count: int, parameters: tuple) -> bool:
     pass

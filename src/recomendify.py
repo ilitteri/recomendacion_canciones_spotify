@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import sys
-from grafo import Grafo
+from graph import Graph
 from user import User
 from playlist import Playlist
 from song import Song
@@ -22,37 +22,20 @@ def read_input(path: str) -> list:
 
     return parsed_lines
 
-def load_playlists_song_structure(playlists: dict, songs: dict) -> Grafo:
-    graph = Grafo(es_dirigido=False)
+def load_playlists_song_structure(playlists: dict, songs: dict) -> Graph:
+    graph = Graph(is_directed=False)
 
     for song in songs:
-        graph.agregar_vertice(song)
+        graph.add_vertex(song)
 
     for playlist in playlists:
-        added = set()
         for song1 in playlists[playlist]:
             for song2 in playlists[playlist]:
-                # if song1 not in added or song2 not in added:
                 if not graph.estan_unidos(song1, song2) and song1 != song2:
-                    graph.agregar_arista(song1, song2, (playlists[playlist].getOwner(), playlist)) 
+                    graph.add_edge(song1, song2, (playlists[playlist].getOwner(), playlist)) 
     return graph
 
-def load_user_song_structure_(lines: list) -> Grafo:
-    '''
-    Lee las lineas parseadas y carga en memoria los datos.
-    Pre: Un archivo fue leido y parseado.
-    '''
-    graph = Grafo(es_dirigido=False)
-
-    for line in lines:
-        _, user_id, track_name, artist, _, _, _ = line
-        graph.agregar_vertice(user_id)
-        graph.agregar_vertice(track_name+" - "+artist)
-        graph.agregar_arista(user_id, track_name+" - "+artist)
-
-    return graph
-
-def process_stdin(users_graph: Grafo, songs_graph: Grafo, songs: dict) -> None:
+def process_stdin(users_graph: Graph, songs_graph: Graph, songs: dict) -> None:
     most_importants = []
     while True:
         stdin = input('').split(maxsplit=1)
@@ -99,7 +82,7 @@ def process_stdin(users_graph: Grafo, songs_graph: Grafo, songs: dict) -> None:
 
 def load_data(lines: list) -> tuple:
     songs = {}
-    graph = Grafo(es_dirigido=False)
+    graph = Graph(is_directed=False)
     playlists = {}
     for line in lines:
         _, user_id, track_name, artist, playlist_id, playlist_name, genres = line
@@ -112,11 +95,11 @@ def load_data(lines: list) -> tuple:
         playlists[playlist_id].addSong(songs[song_tag])
         
         if user_id not in graph:
-            graph.agregar_vertice(user_id)
+            graph.add_vertex(user_id)
         if song_tag not in graph:
-            graph.agregar_vertice(song_tag)
+            graph.add_vertex(song_tag)
         if not graph.estan_unidos(user_id, song_tag):
-            graph.agregar_arista(user_id, song_tag, playlist_name)
+            graph.add_edge(user_id, song_tag, playlist_name)
 
     return songs, playlists, graph
 

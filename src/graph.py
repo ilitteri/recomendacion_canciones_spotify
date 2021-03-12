@@ -1,138 +1,85 @@
-from typing import Any, Iterator
+from typing import Iterator, Any
 
-class Vertex:
-    def __init__(self, label: str, data: Any = None, color: str = "black"):
-        self.__label: str = label
-        self.__color: str = color
-        self.__data: Any = data
-        # self.__eccentricity = None #se asume el vertice aislado
-        self.__adjacents: set = set()
-        self.__incidentEdges: set = set()
-    
-    # def __eq__(self, o: object) -> bool:
-    #     return self.__label == o.getLabel()
-
-    def __str__(self):
-        return f'{self.__label}'
-    
-    def __iter__(self):
-        return iter(self.__adjacents)
-
-    def getLabel(self) -> str:
-        return self.__label
-    
-    def getDegree(self) -> int:
-        return len(self.__incidentEdges)
-    
-    def getColor(self) -> str:
-        return self.__color
-
-    def getAdjacents(self) -> set:
-        return self.__adjacents
-    
-    def isAdjacentOf(self, other) -> bool:
-        return other in self.__adjacents
-    
-    def getAdjacentsCount(self) -> int:
-        return len(self.__adjacents)
-    
-    def isIsolated(self) -> bool:
-        return len(self.__adjacents) == 0 and len(self.__incidentEdges) == 0
-
-    def addAdjacent(self, other) -> None:
-        self.__adjacents.add(other)
-
-class Edge:
-    def __init__(self, v1: Vertex, v2: Vertex, w: Any = None):
-        self.__endPoints = [v1, v2]
-        self.__weight = w
-
-    def __iter__(self):
-        return iter(self.__endPoints)
-
-    def getEndPoints(self) -> list:
-        return self.__endPoints
-    
-    def isLoop(self) -> bool:
-        return self.__endPoints[0] == self.__endPoints[1]
-    
-    def getWeight(self) -> any:
-        return self.__weight
-        
 class Graph:
-    def __init__(self, verticesSet: dict = None, edgesSet: set = None):
-        self.__verticesSet: dict = verticesSet or {}
-        self.__edgesSet: set = edgesSet or {}
-    
-    def __iter__(self) -> Iterator:
-        return iter(self.__verticesSet)
-    
-    def __contains__(self, vertex: str) -> bool:
-        return vertex in self.__verticesSet
-    
-    def __len__(self) -> int:
-        return len(self.__verticesSet)
-    
-    def __add__(self, other):
-        return Graph({**self.__verticesSet, **other.verticesSet}, self.__edgesSet+other.edgesSet)
-        #Py3.9#return Graph(self.__verticesSet | other.verticesSet, self.__edgesSet+other.edgesSet)
-    
-    def __str__(self):
-        out_str = ""
-        # for e in self.__edgesSet:
-        #     out_str += str(e.getEndPoints())
-        #     out_str += '\n'
-        for v in self.__verticesSet.values():
-            out_str += v.getLabel()
-            for w in v.getAdjacents():
-                out_str += " <---> " + w.getLabel()
-            out_str += "\n"
-        return out_str
+	def __init__(self, is_directed: bool = False, vertices_init: list = []) -> None:
+		self.__vertices = {}
+		for v in vertices_init:
+			self.__vertices[v] = {}
+		self.__is_directed = is_directed
 
-    def addVertex(self, vertex: Vertex) -> None:
-        label = vertex.getLabel()
-        if label not in self.__verticesSet:
-            self.__verticesSet[label] = vertex
-    
-    def addEdge(self, edge: Edge) -> None:
-        endPoints = edge.getEndPoints()
-        for vertex in endPoints:
-            if vertex.getLabel() not in self.__verticesSet:
-                raise ValueError("Vertex not in graph")
-        endPoints[0].addAdjacent(endPoints[1])
-        # endPoints[1].addIncidentEdge(edge)
-        endPoints[1].addAdjacent(endPoints[0])
-        # endPoints[0].addIncidentEdge(edge)
-        self.__edgesSet[endPoints[0].getLabel()+endPoints[1].getLabel()] = edge
-    
-    def removeVertex(self) -> Vertex:
-        pass
+	def __contains__(self, v: str) -> bool:
+		return v in self.__vertices
 
-    def removeEdge(self) -> Edge:
-        pass
+	def __len__(self) -> int:
+		return len(self.__vertices)
 
-    def getVertices(self) -> dict:
-        return self.__verticesSet
-    
-    def getVertex(self, label: str) -> Vertex:
-        if label in self:
-            return self.__verticesSet[label]
-        raise NameError(label)
+	def __iter__(self) -> Iterator:
+		return iter(self.__vertices)
 
-    def getEdge(self, vertex_a: Vertex, vertex_b: Vertex) -> Edge:
-        a = vertex_a.getLabel()
-        b = vertex_b.getLabel()
-        return self.__edgesSet[a+b] if a+b in self.__edgesSet else self.__edgesSet[b+a]
-    
-    def getEdges(self) -> set:
-        return self.__edgesSet
+	def add_vertex(self, v: str) -> None:
+		if v in self:
+			raise ValueError(f"Ya hay un vertice {str(v)} en el grafo")
+		self.__vertices[v] = {}
 
-    def getOrder(self) -> int:
-        return len(self)
+	def __validate_vertex(self, v: str) -> None:
+		if v not in self:
+			raise ValueError(f"No hay un vertice str(v) en el grafo")
 
-    def getOrderOf(self, color: str) -> int:
-        order = 0
-        for v in self.__verticesSet:
-            if self.__verticesSet[v].getColor() == color:
-                order += 1
-        return order
+	def __validate_vertices(self, v: str, w: str) -> None:
+		self.__validate_vertex(v)
+		self.__validate_vertex(w)
+
+	def borrar_vertice(self, v: str) -> None:
+		self.__validate_vertex(v)
+		for w in self:
+			if v in self.__vertices[w]:
+				del self.__vertices[w][v]
+		del self.__vertices[v]
+
+	def add_edge(self, v: str, w: str, peso: Any = None) -> None:
+		self.__validate_vertices(v, w)
+		if self.estan_unidos(v, w):
+			raise ValueError("El vertice " + str(v) + " ya tiene como adyacente al vertice " + str(w))
+		
+		self.__vertices[v][w] = peso
+		if not self.__is_directed:
+			self.__vertices[w][v] = peso
+
+	def remove_edge(self, v: str, w: str) -> None:
+		self.__validate_vertices(v, w)
+		if not self.estan_unidos(v, w):
+			raise ValueError("El vertice " + str(v) + " no tiene como adyacente al vertice " + str(w))
+
+		del self.__vertices[v][w]
+		if not self.__is_directed:
+			del self.__vertices[w][v]
+
+	def are_joined(self, v: str, w: str) -> bool:
+		return w in self.__vertices[v]
+
+	def edge_weight(self, v: str, w: str) -> Any:
+		if not self.estan_unidos(v, w):
+			raise ValueError("El vertice " + str(v) + " no tiene como adyacente al vertice " + str(w))
+		return self.__vertices[v][w]
+
+	def get_vertices(self) -> list:
+		return list(self.__vertices.keys())
+
+	def random_vertex(self) -> str:
+		return self.obtener_vertices()[0]
+
+	def adjacents(self, v: str) -> list:
+		self.__validate_vertex(v)
+		return list(self.__vertices[v].keys())
+	
+	def order(self) -> int:
+		return len(self)
+
+	def __str__(self) -> str:
+		cad = ""
+		for v in self:
+			cad += v
+			for w in self.adjacents(v):
+				cad += " -> " + w 
+			cad += "\n"
+		return cad
