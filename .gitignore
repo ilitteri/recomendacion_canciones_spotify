@@ -197,3 +197,5 @@ cython_debug/
 .vscode/
 dataset/
 pychache/
+ex.py
+src/out.txt
