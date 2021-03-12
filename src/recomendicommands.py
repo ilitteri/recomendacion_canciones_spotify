@@ -1,5 +1,5 @@
 from constants import SONG_COLOR, USER_COLOR
-from errors import *
+from error_messages import *
 from graph import Graph
 from graphtools import bfs_shortest_path, bfs_in_range, cycle_n, clustering, pagerank, personilized_pagerank, random_walk
 
