@@ -1,5 +1,5 @@
-USER_COLOR = "user"
-SONG_COLOR = "song"
+USER_COLOR = "usuarios"
+SONG_COLOR = "canciones"
 
 WALK = "camino"
 MOST_IMPORTANTS = "mas_importantes"

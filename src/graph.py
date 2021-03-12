@@ -23,7 +23,7 @@ class Graph:
 
 	def __validate_vertex(self, v: str) -> None:
 		if v not in self:
-			raise ValueError(f"No hay un vertice str(v) en el grafo")
+			raise ValueError(f"No hay un vertice {str(v)} en el grafo")
 
 	def __validate_vertices(self, v: str, w: str) -> None:
 		self.__validate_vertex(v)
@@ -38,7 +38,7 @@ class Graph:
 
 	def add_edge(self, v: str, w: str, peso: Any = None) -> None:
 		self.__validate_vertices(v, w)
-		if self.estan_unidos(v, w):
+		if self.are_joined(v, w):
 			raise ValueError("El vertice " + str(v) + " ya tiene como adyacente al vertice " + str(w))
 		
 		self.__vertices[v][w] = peso
@@ -47,7 +47,7 @@ class Graph:
 
 	def remove_edge(self, v: str, w: str) -> None:
 		self.__validate_vertices(v, w)
-		if not self.estan_unidos(v, w):
+		if not self.are_joined(v, w):
 			raise ValueError("El vertice " + str(v) + " no tiene como adyacente al vertice " + str(w))
 
 		del self.__vertices[v][w]
@@ -58,7 +58,7 @@ class Graph:
 		return w in self.__vertices[v]
 
 	def edge_weight(self, v: str, w: str) -> Any:
-		if not self.estan_unidos(v, w):
+		if not self.are_joined(v, w):
 			raise ValueError("El vertice " + str(v) + " no tiene como adyacente al vertice " + str(w))
 		return self.__vertices[v][w]
 
@@ -66,7 +66,7 @@ class Graph:
 		return list(self.__vertices.keys())
 
 	def random_vertex(self) -> str:
-		return self.obtener_vertices()[0]
+		return self.get_vertices()[0]
 
 	def adjacents(self, v: str) -> list:
 		self.__validate_vertex(v)

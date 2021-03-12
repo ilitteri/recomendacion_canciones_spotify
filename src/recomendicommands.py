@@ -1,6 +1,7 @@
+from constants import SONG_COLOR, USER_COLOR
 from errors import *
 from graph import Graph
-from graphtools import bfs_shortest_path, bfs_in_range, cycle_n, clustering, pagerank
+from graphtools import bfs_shortest_path, bfs_in_range, cycle_n, clustering, pagerank, personilized_pagerank, random_walk
 
 def error_handler(element: list, msg: str) -> bool:
     if element == None:
@@ -64,30 +65,48 @@ def in_range(songs_graph: Graph, n: int, song: str) -> None: # O(C+L)
 
 def print_clustering_coefficient(songs_graph: Graph, song: str = None) -> None:
     if song == None:
-        print(round(sum(clustering(songs_graph, v) for v in songs_graph) / songs_graph.order(), 3))
+        print(round(sum([clustering(songs_graph, v) for v in songs_graph]) / songs_graph.order(), 3))
     else: 
         print(clustering(songs_graph, song))
 
-def print_most_importants(most_importants: list, n: int) -> None:
+def print_song_list(song_list: list, n: int) -> None:
     out = ""
     i = 0
-    for _, song in most_importants:
+    for _, song in song_list:
         if i == n:
             break
-        out += f'{song}{"; " if song != most_importants[n-1][1] else ""}'
+        out += f'{song}{"; " if song != song_list[n-1][1] else ""}'
         i += 1
     print(out)
 
 def initialize_pagerank(graph: Graph, d: float = 0.85) -> dict:
-    initial_ranks = {}
-    for v in graph:
-        initial_ranks[v] = (1 - d) / graph.order()
-    return initial_ranks
+    order = graph.order()
+    return dict.fromkeys(graph, (1 - d) / order)
+    # return {v: (1 - d) / order for v in graph}
 
 def sort_most_importants(songs: dict, most_importants: dict):
-    return sorted([(most_importants[v], v) for v in most_importants if v in songs])
+    return sorted([(most_importants[v], v) for v in most_importants if v in songs], reverse=True)
 
 def load_most_importants(users_graph: Graph, songs: dict) -> list:
     initial_ranks = initialize_pagerank(users_graph)
     pagerank(users_graph, users_graph.random_vertex(), initial_ranks)
     return sort_most_importants(songs, initial_ranks)
+
+def initialize_personalized_pagerank(path: list, recommended: dict) -> None:
+    for v in path:
+        if v not in recommended:
+            recommended[v] = 1
+
+def sort_recommendations(liked_songs: list, songs: dict, users: dict, rec_type: str, recommendations: dict) -> list:
+    if rec_type == USER_COLOR:
+        return sorted([(recommendations[v], v) for v in recommendations if v in users and v not in liked_songs], reverse=True)
+    elif rec_type == SONG_COLOR:
+        return sorted([(recommendations[v], v) for v in recommendations if v in songs and v not in liked_songs], reverse=True)
+
+def recommend(users_graph: Graph, users: dict, songs: dict, rec_type: str, liked_songs: list):
+    recommendations = {}
+    for song in liked_songs:
+        path = random_walk(users_graph, song)
+        initialize_personalized_pagerank(path, recommendations)
+        personilized_pagerank(users_graph, recommendations, path)
+    return sort_recommendations(liked_songs, songs, users, rec_type, recommendations)

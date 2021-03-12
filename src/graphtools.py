@@ -1,3 +1,4 @@
+from random import randint
 from graph import Graph
 from queue import Queue
 
@@ -94,10 +95,29 @@ def clustering(graph: Graph, v: str) -> float:
 
     v_out_degree = len(adjacents)
 
-    return round(edgeCount / (v_out_degree * (v_out_degree - 1)), 3) 
+    return round(edgeCount / (v_out_degree * (v_out_degree - 1)), 3)
 
-def pagerank(graph: Graph, v: str, most_importants: dict, iterations: int = 20, d: float = 0.85):
+def pagerank(graph: Graph, v: str, most_importants: dict, iterations: int = 50, d: float = 0.85):
     degree = graph.order()
     for _ in range(iterations):
         for v in graph:
             most_importants[v] = (1 - d) / degree + d * sum(most_importants[w] / len(graph.adjacents(w)) for w in graph.adjacents(v))
+
+def pick_random_position(arr: list):
+    return randint(0, len(arr)-1)
+
+def random_walk(graph: Graph, song:str, length: int = 20):
+    path = [song]
+    v = song
+    for _ in range(length):
+        adjacents = graph.adjacents(v)
+        v = adjacents[pick_random_position(adjacents)]
+        path.append(v)
+    return path
+
+def personilized_pagerank(graph: Graph, rank: dict, path: list, length: int = 20, iterations: int = 50):
+    for _ in range(iterations):
+        i = 1
+        while i <= length:
+            rank[path[i-1]] = rank[path[i]] / len(graph.adjacents(path[i-1]))
+            i += 1
